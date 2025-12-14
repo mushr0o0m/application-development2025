@@ -1,8 +1,6 @@
 import pytest
-
+from app.models import Address, Order, OrderItem, Product, User
 from sqlalchemy import select
-
-from app.models import Product, User, Address, Order, OrderItem
 
 
 # Тест проверяет создание продукта и корректность полей (id, name)
@@ -77,11 +75,17 @@ async def test_create_order_with_multiple_products(db_session):
     await db_session.refresh(order)
 
     # добавляем несколько позиций заказа
-    oi1 = OrderItem(order_id=order.id, product_id=p1.id, quantity=2, unit_price=p1.price)
-    oi2 = OrderItem(order_id=order.id, product_id=p2.id, quantity=1, unit_price=p2.price)
+    oi1 = OrderItem(
+        order_id=order.id, product_id=p1.id, quantity=2, unit_price=p1.price
+    )
+    oi2 = OrderItem(
+        order_id=order.id, product_id=p2.id, quantity=1, unit_price=p2.price
+    )
     db_session.add_all([oi1, oi2])
     # обновляем итоговую сумму заказа
-    order.total_amount = (float(p1.price) * oi1.quantity) + (float(p2.price) * oi2.quantity)
+    order.total_amount = (float(p1.price) * oi1.quantity) + (
+        float(p2.price) * oi2.quantity
+    )
     db_session.add(order)
     await db_session.commit()
 
@@ -90,7 +94,9 @@ async def test_create_order_with_multiple_products(db_session):
     found = result.scalars().first()
     assert found is not None
 
-    result_items = await db_session.execute(select(OrderItem).where(OrderItem.order_id == order.id))
+    result_items = await db_session.execute(
+        select(OrderItem).where(OrderItem.order_id == order.id)
+    )
     items = result_items.scalars().all()
     assert len(items) == 2
 
@@ -129,7 +135,9 @@ async def test_get_and_delete_order(db_session):
 
     # удаляем заказ и его позиции
     # сначала удаляем позиции заказа, чтобы избежать ограничений целостности
-    result_items = await db_session.execute(select(OrderItem).where(OrderItem.order_id == order.id))
+    result_items = await db_session.execute(
+        select(OrderItem).where(OrderItem.order_id == order.id)
+    )
     items = result_items.scalars().all()
     for it in items:
         await db_session.delete(it)

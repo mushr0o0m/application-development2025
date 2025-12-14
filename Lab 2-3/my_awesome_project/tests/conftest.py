@@ -1,12 +1,11 @@
 import pytest
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-
 from app.models import Base
 from app.repositories.user_repository import UserRepository
 from litestar.testing import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+
 
 @pytest.fixture(scope="session")
 def engine(tmp_path_factory):
@@ -25,6 +24,7 @@ def async_session_maker(engine):
     """Session maker fixture expected by tests."""
     return sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
+
 @pytest_asyncio.fixture(scope="session")
 async def tables(engine):
     async with engine.begin() as conn:
@@ -34,15 +34,18 @@ async def tables(engine):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
+
 @pytest_asyncio.fixture
 async def db_session(async_session_maker, tables) -> AsyncSession:
     # ensure the DB tables fixture runs before providing a session
     async with async_session_maker() as session:
         yield session
 
+
 @pytest.fixture
 def user_repository(db_session):
     return UserRepository(db_session)
+
 
 @pytest.fixture
 def client(async_session_maker, engine, tables):

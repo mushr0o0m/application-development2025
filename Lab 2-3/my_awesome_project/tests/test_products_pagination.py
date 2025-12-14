@@ -1,9 +1,6 @@
 import pytest
-
-from sqlalchemy import select, func
-
 from app.models import Product
-
+from sqlalchemy import func, select
 
 # Тесты проверяют поведение пагинации товаров на уровне БД (limit/offset).
 # Подход: создаём набор продуктов с детерминированными именами и запрашиваем
@@ -23,7 +20,12 @@ async def test_products_pagination_basic(db_session):
 
     # страница 1
     page = 1
-    stmt = select(Product).order_by(Product.name).limit(per_page).offset((page - 1) * per_page)
+    stmt = (
+        select(Product)
+        .order_by(Product.name)
+        .limit(per_page)
+        .offset((page - 1) * per_page)
+    )
     res = await db_session.execute(stmt)
     items = res.scalars().all()
     assert len(items) == 10
@@ -31,7 +33,12 @@ async def test_products_pagination_basic(db_session):
 
     # страница 2
     page = 2
-    stmt = select(Product).order_by(Product.name).limit(per_page).offset((page - 1) * per_page)
+    stmt = (
+        select(Product)
+        .order_by(Product.name)
+        .limit(per_page)
+        .offset((page - 1) * per_page)
+    )
     res = await db_session.execute(stmt)
     items = res.scalars().all()
     assert len(items) == 10
@@ -39,7 +46,12 @@ async def test_products_pagination_basic(db_session):
 
     # страница 3 (частичная)
     page = 3
-    stmt = select(Product).order_by(Product.name).limit(per_page).offset((page - 1) * per_page)
+    stmt = (
+        select(Product)
+        .order_by(Product.name)
+        .limit(per_page)
+        .offset((page - 1) * per_page)
+    )
     res = await db_session.execute(stmt)
     items = res.scalars().all()
     assert len(items) == 5

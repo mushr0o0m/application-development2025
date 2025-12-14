@@ -1,0 +1,31 @@
+[MASTER]
+jobs=12
+persistent=yes
+
+[BASIC]
+init-hook='import sys; sys.path.append(".")'
+disable=
+    missing-function-docstring,
+    missing-module-docstring,
+    missing-class-docstring,
+    too-few-public-methods,
+    not-callable,
+    attribute-defined-outside-init,
+    ungrouped-imports,
+    wrong-import-order,
+    duplicate-code,
+    unused-import,
+    unused-argument,
+    import-outside-toplevel,
+    too-many-lines,          
+    too-many-branches,       
+    too-many-statements,    
+    too-many-locals,         
+    fixme,                    
+    similarlines,           
+
+ignore=deploy,temp,build,tests
+
+extension-pkg-whitelist=pydantic,orgson
+
+generated-members=pydantic.PostgresDsn.build

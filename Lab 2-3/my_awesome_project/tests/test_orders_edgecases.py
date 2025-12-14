@@ -1,9 +1,9 @@
-import pytest
 from decimal import Decimal
-from sqlalchemy import select
 
-from app.models import User, Address, Product, Order, OrderItem
+import pytest
+from app.models import Address, Order, OrderItem, Product, User
 from app.services.order_service import OrderService
+from sqlalchemy import select
 
 
 @pytest.mark.asyncio
@@ -61,7 +61,9 @@ async def test_create_order_empty_items(db_session):
     assert order is not None
     await db_session.refresh(order)
     # нет позиций
-    res = await db_session.execute(select(OrderItem).where(OrderItem.order_id == order.id))
+    res = await db_session.execute(
+        select(OrderItem).where(OrderItem.order_id == order.id)
+    )
     items = res.scalars().all()
     assert items == []
     assert float(order.total_amount) == 0
@@ -123,7 +125,9 @@ async def test_create_order_insufficient_stock(db_session):
 
     # попытаемся заказать 2 штуки при наличии 1 => ожидаем ValueError
     with pytest.raises(ValueError):
-        await svc.create_order(user.id, address.id, [{"product_id": p.id, "quantity": 2}])
+        await svc.create_order(
+            user.id, address.id, [{"product_id": p.id, "quantity": 2}]
+        )
 
 
 @pytest.mark.asyncio
@@ -159,4 +163,8 @@ async def test_create_order_product_not_found(db_session):
     svc = OrderService(PR(), OR(), OIR())
 
     with pytest.raises(ValueError):
-        await svc.create_order(user.id, address.id, [{"product_id": "00000000-0000-0000-0000-000000000000", "quantity": 1}])
+        await svc.create_order(
+            user.id,
+            address.id,
+            [{"product_id": "00000000-0000-0000-0000-000000000000", "quantity": 1}],
+        )

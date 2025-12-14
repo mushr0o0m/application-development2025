@@ -1,5 +1,4 @@
 import pytest
-
 from sqlalchemy import select
 
 
@@ -28,7 +27,9 @@ async def test_get_user_by_email(user_repository):
     }
     await user_repository.create(user_data)
 
-    results = await user_repository.get_by_filter(count=10, page=1, email="bob@example.com")
+    results = await user_repository.get_by_filter(
+        count=10, page=1, email="bob@example.com"
+    )
     assert len(results) == 1
     assert results[0].email == "bob@example.com"
 
@@ -43,7 +44,9 @@ async def test_update_user(user_repository):
 
     user = await user_repository.create(user_data)
 
-    updated = await user_repository.update(user.id, {"description": "updated description"})
+    updated = await user_repository.update(
+        user.id, {"description": "updated description"}
+    )
     assert updated.description == "updated description"
 
 
@@ -58,7 +61,9 @@ async def test_delete_user(user_repository):
     user = await user_repository.create(user_data)
     await user_repository.delete(user.id)
 
-    results = await user_repository.get_by_filter(count=10, page=1, email="dave@example.com")
+    results = await user_repository.get_by_filter(
+        count=10, page=1, email="dave@example.com"
+    )
     assert len(results) == 0
 
 
@@ -67,7 +72,9 @@ async def test_delete_user(user_repository):
 async def test_list_users(user_repository):
     # создаём несколько пользователей
     for i in range(3):
-        await user_repository.create({"username": f"u{i}", "email": f"u{i}@example.com"})
+        await user_repository.create(
+            {"username": f"u{i}", "email": f"u{i}@example.com"}
+        )
 
     results = await user_repository.get_by_filter(count=10, page=1)
     assert len(results) >= 3

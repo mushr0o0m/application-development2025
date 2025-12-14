@@ -1,9 +1,12 @@
-
 def test_create_get_update_delete_user(client):
     """Тестирует API CRUD для пользователей: создание, получение по id, обновление и удаление."""
 
     # создаём пользователя
-    payload = {"username": "api_user", "email": "api_user@example.com", "description": "from api"}
+    payload = {
+        "username": "api_user",
+        "email": "api_user@example.com",
+        "description": "from api",
+    }
     resp = client.post("/users", json=payload)
     assert resp.status_code == 201 or resp.status_code == 200
     data = resp.json()
@@ -17,7 +20,11 @@ def test_create_get_update_delete_user(client):
     assert got["email"] == "api_user@example.com"
 
     # обновляем пользователя
-    update_payload = {"username": "api_user2", "email": "api_user@example.com", "description": "updated"}
+    update_payload = {
+        "username": "api_user2",
+        "email": "api_user@example.com",
+        "description": "updated",
+    }
     resp = client.put(f"/users/{user_id}", json=update_payload)
     assert resp.status_code == 200
     updated = resp.json()

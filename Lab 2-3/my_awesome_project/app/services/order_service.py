@@ -1,10 +1,22 @@
+"""Business logic for creating and managing orders.
+
+Many service classes in this project are small and may expose only a
+single public method.
+
+This service coordinates repositories to create orders and associated
+order items, validate stock and update product quantities.
+"""
+
+# pylint: disable=too-few-public-methods
+
 from __future__ import annotations
 
 from typing import Any, Iterable
-from types import SimpleNamespace
 
 
 class OrderService:
+    """Service responsible for order creation and related operations."""
+
     def __init__(
         self,
         product_repository,
@@ -16,16 +28,17 @@ class OrderService:
         self.order_item_repository = order_item_repository
 
     async def create_order(self, user_id, address_id, items: Iterable[dict[str, Any]]):
-        """Создаёт заказ с позициями.
+        """Create an order and its items after validating stock.
 
-        items: iterable of {'product_id': UUID, 'quantity': int}
+        Args:
+            user_id: id of user placing the order.
+            address_id: id of delivery address.
+            items: iterable of dicts with keys ``product_id`` and ``quantity``.
 
-        Поведение:
-        - проверяет доступный сток для каждого продукта
-        - если недостаточно — выбрасывает ValueError
-        - иначе уменьшает сток через product_repository и создаёт заказ + позиции
-        - возвращает созданный заказ
+        Returns:
+            The created order object as returned by the order repository.
         """
+
         total = 0
         # собираем продукты и проверяем сток
         products = []
@@ -41,7 +54,11 @@ class OrderService:
             products.append((product, qty))
 
         # создаём заказ
-        order_data = {"user_id": user_id, "address_id": address_id, "total_amount": total}
+        order_data = {
+            "user_id": user_id,
+            "address_id": address_id,
+            "total_amount": total,
+        }
         order = await self.order_repository.create(order_data)
 
         # уменьшаем сток и создаём позиции
@@ -50,7 +67,9 @@ class OrderService:
             product.stock_quantity = new_stock
             # ожидаем, что репозиторий предоставляет метод для сохранения/обновления продукта
             if hasattr(self.product_repository, "update"):
-                await self.product_repository.update(product.id, {"stock_quantity": new_stock})
+                await self.product_repository.update(
+                    product.id, {"stock_quantity": new_stock}
+                )
             elif hasattr(self.product_repository, "save"):
                 await self.product_repository.save(product)
             else:

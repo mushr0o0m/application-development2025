@@ -1,15 +1,17 @@
 from datetime import datetime
+
 from app.database.session import engine
-from app.models.user import User
-from app.models.address import Address
-from sqlalchemy.orm import sessionmaker
 from app.models import Base
+from app.models.address import Address
+from app.models.user import User
+from sqlalchemy.orm import sessionmaker
+
 
 def seed():
     Base.metadata.create_all(bind=engine)
-    
+
     session_factory = sessionmaker(engine)
-    
+
     users_data = [
         {
             "username": "alex_ivanov",
@@ -22,12 +24,12 @@ def seed():
                     "state": "Московская область",
                     "zip_code": "101000",
                     "country": "Россия",
-                    "is_primary": True
+                    "is_primary": True,
                 }
-            ]
+            ],
         },
         {
-            "username": "maria_petrova", 
+            "username": "maria_petrova",
             "email": "maria.petrova@example.com",
             "description": "Любитель художественной литературы",
             "addresses": [
@@ -37,24 +39,24 @@ def seed():
                     "state": "Ленинградская область",
                     "zip_code": "190000",
                     "country": "Россия",
-                    "is_primary": True
+                    "is_primary": True,
                 }
-            ]
+            ],
         },
         {
             "username": "sergey_sidorov",
-            "email": "sergey.sidorov@example.com", 
+            "email": "sergey.sidorov@example.com",
             "description": "Спортсмен, активный покупатель",
             "addresses": [
                 {
                     "street": "ул. Садовая, 45",
                     "city": "Екатеринбург",
-                    "state": "Свердловская область", 
+                    "state": "Свердловская область",
                     "zip_code": "620000",
                     "country": "Россия",
-                    "is_primary": True
+                    "is_primary": True,
                 }
-            ]
+            ],
         },
         {
             "username": "olga_kuznetsova",
@@ -63,13 +65,13 @@ def seed():
             "addresses": [
                 {
                     "street": "ул. Советская, 10",
-                    "city": "Новосибирск", 
+                    "city": "Новосибирск",
                     "state": "Новосибирская область",
                     "zip_code": "630000",
                     "country": "Россия",
-                    "is_primary": True
+                    "is_primary": True,
                 }
-            ]
+            ],
         },
         {
             "username": "dmitry_voronin",
@@ -80,14 +82,14 @@ def seed():
                     "street": "ул. Красноармейская, 75",
                     "city": "Казань",
                     "state": "Татарстан",
-                    "zip_code": "420000", 
+                    "zip_code": "420000",
                     "country": "Россия",
-                    "is_primary": True
+                    "is_primary": True,
                 }
-            ]
-        }
+            ],
+        },
     ]
-    
+
     with session_factory() as session:
         try:
             for user_data in users_data:
@@ -97,25 +99,30 @@ def seed():
                     email=user_data["email"],
                     description=user_data["description"],
                     created_at=current_time,
-                    updated_at=current_time
+                    updated_at=current_time,
                 )
                 session.add(user)
                 session.flush()
-                
+
                 for address_data in user_data["addresses"]:
                     address = Address(
                         user_id=user.id,
                         created_at=current_time,
                         updated_at=current_time,
-                        **{k: v for k, v in address_data.items() if k not in ['created_at', 'updated_at']}
+                        **{
+                            k: v
+                            for k, v in address_data.items()
+                            if k not in ["created_at", "updated_at"]
+                        }
                     )
                     session.add(address)
-            
+
             session.commit()
-                
+
         except Exception as e:
             session.rollback()
             raise
+
 
 if __name__ == "__main__":
     seed()

@@ -6,3 +6,8 @@ pydantic
 pytest
 greenlet
 asyncpg
+pre-commit
+black
+isort
+pylint
+uvicorn

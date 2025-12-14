@@ -1,15 +1,17 @@
-import pytest
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
 
-from app.models import User, Address, Product, Order, OrderItem
+import pytest
+from app.models import Address, Order, OrderItem, Product, User
 
 
 @pytest.mark.asyncio
 async def test_create_order_with_multiple_products(db_session):
     # Создаём тестового пользователя и адрес
     now = datetime.utcnow()
-    user = User(username="test_user", email="test@example.com", created_at=now, updated_at=now)
+    user = User(
+        username="test_user", email="test@example.com", created_at=now, updated_at=now
+    )
     db_session.add(user)
     await db_session.commit()
     await db_session.refresh(user)
@@ -30,8 +32,12 @@ async def test_create_order_with_multiple_products(db_session):
     await db_session.refresh(address)
 
     # Создаём два продукта с запасом
-    p1 = Product(name="Prod A", description="A", price=Decimal("10.00"), stock_quantity=5)
-    p2 = Product(name="Prod B", description="B", price=Decimal("20.00"), stock_quantity=3)
+    p1 = Product(
+        name="Prod A", description="A", price=Decimal("10.00"), stock_quantity=5
+    )
+    p2 = Product(
+        name="Prod B", description="B", price=Decimal("20.00"), stock_quantity=3
+    )
     db_session.add_all([p1, p2])
     await db_session.commit()
     await db_session.refresh(p1)
@@ -43,12 +49,18 @@ async def test_create_order_with_multiple_products(db_session):
     await db_session.flush()
 
     # Добавляем две позиции заказа
-    item1 = OrderItem(order_id=order.id, product_id=p1.id, quantity=2, unit_price=p1.price)
-    item2 = OrderItem(order_id=order.id, product_id=p2.id, quantity=1, unit_price=p2.price)
+    item1 = OrderItem(
+        order_id=order.id, product_id=p1.id, quantity=2, unit_price=p1.price
+    )
+    item2 = OrderItem(
+        order_id=order.id, product_id=p2.id, quantity=1, unit_price=p2.price
+    )
     db_session.add_all([item1, item2])
 
     # Рассчитаем total_amount
-    order.total_amount = item1.quantity * item1.unit_price + item2.quantity * item2.unit_price
+    order.total_amount = (
+        item1.quantity * item1.unit_price + item2.quantity * item2.unit_price
+    )
 
     await db_session.commit()
 
