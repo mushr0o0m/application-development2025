@@ -17,14 +17,15 @@ class Order(Base):
     status: Mapped[str] = mapped_column(String(20), default="pending")
     total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(onupdate=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
 
     # Используем строки для отложенной загрузки
     user: Mapped["User"] = relationship("User", back_populates="orders")
     address: Mapped["Address"] = relationship("Address")
     order_items: Mapped[list["OrderItem"]] = relationship(
         "OrderItem", 
-        back_populates="order"
+        back_populates="order",
+        lazy="selectin",
     )
 
     def __repr__(self):

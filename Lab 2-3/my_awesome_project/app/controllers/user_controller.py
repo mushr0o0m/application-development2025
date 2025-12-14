@@ -3,8 +3,9 @@ from __future__ import annotations
 from typing import List
 from uuid import UUID
 
-from litestar import Controller, get, post, put, delete, Parameter, Provide
-from litestar.exceptions import NotFoundException
+from litestar import Controller, get, post, put, delete, Request
+from litestar.params import Parameter
+from litestar.di import Provide
 
 from app.services.user_service import UserService
 from app.schemas import UserCreate, UserResponse, UserListResponse
@@ -12,7 +13,7 @@ from app.schemas import UserCreate, UserResponse, UserListResponse
 
 class UserController(Controller):
     path = "/users"
-    dependencies = {"user_service": Provide("user_service")}
+    # Use application-level dependency injection; no controller-local provider needed
 
     @get("/{user_id:uuid}")
     async def get_user_by_id(
@@ -43,9 +44,10 @@ class UserController(Controller):
     async def create_user(
         self,
         user_service: UserService,
-        user_data: UserCreate,
+        request: Request,
     ) -> UserResponse:
-        user = await user_service.create(user_data.model_dump())
+        user_json = await request.json()
+        user = await user_service.create(user_json)
         return UserResponse.model_validate(user)
 
     @delete("/{user_id:uuid}")
@@ -61,7 +63,8 @@ class UserController(Controller):
         self,
         user_service: UserService,
         user_id: UUID,
-        user_data: UserCreate,
+        request: Request,
     ) -> UserResponse:
-        user = await user_service.update(user_id, user_data.model_dump())
+        user_json = await request.json()
+        user = await user_service.update(user_id, user_json)
         return UserResponse.model_validate(user)

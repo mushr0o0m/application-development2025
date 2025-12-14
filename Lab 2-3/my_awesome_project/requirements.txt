@@ -3,3 +3,6 @@ alembic
 psycopg2-binary
 litestar
 pydantic
+pytest
+greenlet
+asyncpg

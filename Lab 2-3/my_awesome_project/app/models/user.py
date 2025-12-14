@@ -15,7 +15,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(nullable=False, unique=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(onupdate=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
 
     addresses: Mapped[list["Address"]] = relationship(
         "Address", 
@@ -24,7 +24,8 @@ class User(Base):
     
     orders: Mapped[list["Order"]] = relationship(
         "Order", 
-        back_populates="user"
+        back_populates="user",
+        lazy="selectin",
     )
 
     def __repr__(self):

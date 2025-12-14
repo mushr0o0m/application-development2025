@@ -3,7 +3,9 @@ from __future__ import annotations
 import os
 from typing import AsyncIterator
 
-from litestar import Litestar, Provide
+from litestar import Litestar
+from litestar.di import Provide
+from litestar.params import Parameter
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -43,6 +45,7 @@ app = Litestar(
         "user_repository": Provide(provide_user_repository),
         "user_service": Provide(provide_user_service),
     },
+    debug=True,
 )
 
 if __name__ == "__main__":

@@ -17,11 +17,12 @@ class Product(Base):
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     stock_quantity: Mapped[int] = mapped_column(default=0)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(onupdate=datetime.now)
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
 
     order_items: Mapped[list["OrderItem"]] = relationship(
         "OrderItem", 
-        back_populates="product"
+        back_populates="product",
+        lazy="selectin",
     )
 
     def __repr__(self):
