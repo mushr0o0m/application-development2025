@@ -27,6 +27,8 @@ services:
       - HOST=0.0.0.0
       - PORT=8000
       - LOG_LEVEL=debug
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
       db:
         condition: service_healthy
@@ -42,6 +44,16 @@ services:
       - RABBITMQ_DEFAULT_VHOST=local
     volumes:
       - rabbitmq_data:/data
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   rabbitmq_data:
