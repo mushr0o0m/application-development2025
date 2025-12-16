@@ -13,19 +13,41 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
+from app.repositories.order_item_repository import OrderItemRepository
+from app.repositories.order_repository import OrderRepository
+from app.repositories.product_repository import ProductRepository
+
 
 class OrderService:
     """Service responsible for order creation and related operations."""
 
     def __init__(
         self,
-        product_repository,
-        order_repository,
-        order_item_repository,
+        product_repository: ProductRepository,
+        order_repository: OrderRepository,
+        order_item_repository: OrderItemRepository,
     ):
         self.product_repository = product_repository
         self.order_repository = order_repository
         self.order_item_repository = order_item_repository
+
+    async def get_by_id(self, order_id):
+        """Return order with its items."""
+
+        return await self.order_repository.get_by_id(order_id)
+
+    async def list(self, count: int = 50, page: int = 1):
+        """Return paginated orders."""
+
+        return await self.order_repository.list(count=count, page=page)
+
+    async def count(self):
+        return await self.order_repository.count()
+
+    async def update_status(self, order_id, status: str):
+        """Update order status."""
+
+        return await self.order_repository.update_status(order_id, status)
 
     async def create_order(self, user_id, address_id, items: Iterable[dict[str, Any]]):
         """Create an order and its items after validating stock.
@@ -42,7 +64,7 @@ class OrderService:
         total = 0
         # собираем продукты и проверяем сток
         products = []
-        for it in items:
+        for it in items or []:
             product = await self.product_repository.get_by_id(it["product_id"])
             if product is None:
                 raise ValueError(f"Product not found: {it['product_id']}")

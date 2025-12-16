@@ -1,10 +1,24 @@
 from logging.config import fileConfig
+import os
 
 from alembic import context
 from app.models.base import Base
 from sqlalchemy import engine_from_config, pool
 
 config = context.config
+
+# Allow overriding the URL via environment variable. If the project uses
+# async driver (postgresql+asyncpg) in `DATABASE_URL`, Alembic (sync engine)
+# cannot use the async driver string, so strip the `+asyncpg` part for
+# migrations.
+env_db_url = os.environ.get("ALEMBIC_DATABASE_URL") or os.environ.get("DATABASE_URL")
+if env_db_url:
+    # If using async driver, convert to sync driver for alembic
+    if env_db_url.startswith("postgresql+asyncpg://"):
+        sync_url = env_db_url.replace("+asyncpg", "")
+    else:
+        sync_url = env_db_url
+    config.set_main_option("sqlalchemy.url", sync_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

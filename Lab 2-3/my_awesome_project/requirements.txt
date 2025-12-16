@@ -11,3 +11,5 @@ black
 isort
 pylint
 uvicorn
+faststream[rabbit]
+pika
