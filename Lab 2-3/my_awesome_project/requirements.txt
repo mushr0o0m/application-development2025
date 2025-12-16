@@ -12,6 +12,6 @@ isort
 pylint
 uvicorn
 faststream[rabbit]
-redis
-redis-py[asyncio]
+pip>=23.0
+redis>=4.6.0
 pika

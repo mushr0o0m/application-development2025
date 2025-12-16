@@ -8,6 +8,7 @@ from .product import (
     ProductResponse,
     ProductUpdate,
 )
+from .report import ReportResponse, ReportRow
 from .user import UserCreate, UserListResponse, UserResponse, UserUpdate
 
 __all__ = [
@@ -24,4 +25,6 @@ __all__ = [
     "OrderItemResponse",
     "OrderListResponse",
     "OrderQueueMessage",
+    "ReportRow",
+    "ReportResponse",
 ]

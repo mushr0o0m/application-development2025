@@ -11,15 +11,30 @@ import asyncio
 import json
 import os
 from typing import Any, Optional
+import logging
 
-import redis.asyncio as aioredis
+# `redis.asyncio` may be unavailable in some environments (ModuleNotFoundError).
+# Import lazily and provide a clear runtime error if it's missing so callers
+# know how to fix their environment (install `redis>=4.6.0`).
+try:
+    import redis.asyncio as aioredis  # type: ignore
+except Exception:  # pragma: no cover - runtime environment may not have redis
+    aioredis = None  # type: ignore
 
-_redis: Optional[aioredis.Redis] = None
+_redis: Optional["aioredis.Redis"] = None
 _lock = asyncio.Lock()
+_log = logging.getLogger(__name__)
 
 
-async def get_redis() -> aioredis.Redis:
+async def get_redis() -> "aioredis.Redis":
     global _redis
+    if aioredis is None:
+        # Fail fast with an actionable message when `redis` package is missing.
+        raise RuntimeError(
+            "Missing dependency: package 'redis' is not installed.\n"
+            "Install it with: pip install 'redis>=4.6.0' or rebuild your Docker image."
+        )
+
     if _redis is None:
         async with _lock:
             if _redis is None:

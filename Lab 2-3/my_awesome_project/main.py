@@ -5,13 +5,16 @@ from typing import AsyncIterator
 
 from app.controllers.order_controller import OrderController
 from app.controllers.product_controller import ProductController
+from app.controllers.report_controller import ReportController
 from app.controllers.user_controller import UserController
 from app.repositories.order_item_repository import OrderItemRepository
 from app.repositories.order_repository import OrderRepository
+from app.repositories.report_repository import ReportRepository
 from app.repositories.product_repository import ProductRepository
 from app.repositories.user_repository import UserRepository
 from app.services.order_service import OrderService
 from app.services.product_service import ProductService
+from app.services.report_service import ReportService
 from app.services.user_service import UserService
 from litestar import Litestar
 from litestar.di import Provide
@@ -20,9 +23,20 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 # Настройка базы данных
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://user:password@localhost/dbname"
-)
+# Prefer explicit DATABASE_URL from environment. For local development when
+# DATABASE_URL is not set, fall back to a local sqlite async DB so app starts
+# without trying to connect to a non-existent Postgres role `user`.
+raw_db = os.getenv("DATABASE_URL")
+if not raw_db:
+    raise RuntimeError(
+        "DATABASE_URL is not set.\n"
+        "Set it to a valid database URL, for example:\n"
+        "  export DATABASE_URL=\"postgresql+asyncpg://myuser:mypassword@localhost:5432/mydb\"\n"
+        "or for local testing:\n"
+        "  export DATABASE_URL=\"sqlite+aiosqlite:///./test.db\""
+    )
+
+DATABASE_URL = raw_db
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 async_session_factory = sessionmaker(
@@ -63,6 +77,10 @@ async def provide_order_item_repository(
     return OrderItemRepository(db_session)
 
 
+async def provide_report_repository(db_session: AsyncSession) -> ReportRepository:
+    return ReportRepository(db_session)
+
+
 async def provide_product_service(
     product_repository: ProductRepository,
 ) -> ProductService:
@@ -77,8 +95,14 @@ async def provide_order_service(
     return OrderService(product_repository, order_repository, order_item_repository)
 
 
+async def provide_report_service(
+    report_repository: ReportRepository,
+) -> ReportService:
+    return ReportService(report_repository)
+
+
 app = Litestar(
-    route_handlers=[UserController, ProductController, OrderController],
+    route_handlers=[UserController, ProductController, OrderController, ReportController],
     dependencies={
         "db_session": Provide(provide_db_session),
         "user_repository": Provide(provide_user_repository),
@@ -88,6 +112,8 @@ app = Litestar(
         "order_repository": Provide(provide_order_repository),
         "order_item_repository": Provide(provide_order_item_repository),
         "order_service": Provide(provide_order_service),
+        "report_repository": Provide(provide_report_repository),
+        "report_service": Provide(provide_report_service),
     },
     debug=True,
 )

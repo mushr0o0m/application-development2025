@@ -6,12 +6,21 @@ helpers to create tables and a small generator-based ``get_db`` helper used
 by dependency injection systems.
 """
 
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.models import Base
 
-DATABASE_URL = "sqlite:///./test.db"
+# Read DATABASE_URL from environment so scripts use the same DB as other tools.
+# If an async URL with `+asyncpg` is provided (used by async code), strip the
+# async driver part for the synchronous SQLAlchemy `create_engine` used here.
+raw_db_url = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+if "+asyncpg" in raw_db_url:
+    DATABASE_URL = raw_db_url.replace("+asyncpg", "")
+else:
+    DATABASE_URL = raw_db_url
 
 engine = create_engine(DATABASE_URL, echo=True)
 
